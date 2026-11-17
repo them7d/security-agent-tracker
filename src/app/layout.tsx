@@ -9,8 +9,9 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "SentinelSec — Agent Operations Console",
-  description: "GPS tracking, geofence enforcement and order dispatch for securities field teams.",
+  title: "SentinelSec — Field Agent Operations",
+  description:
+    "GPS tracking, geofence enforcement and order dispatch for securities field teams.",
   icons: { icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg" },
 };
 

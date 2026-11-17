@@ -4,17 +4,14 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
 /**
- * Single Credentials provider that authenticates EITHER:
- *   - a Supervisor (role === "supervisor") via email + password, OR
- *   - an Agent        (role === "agent")       via badgeId + pin
- *
+ * Single Credentials provider handling BOTH:
+ *   - supervisor (email + password)
+ *   - agent (badgeId + pin)
  * The role is passed in from the client via the `role` credential field.
- * The returned user object carries `role` and (for agents) `agentId`, which
- * are propagated through the JWT and Session callbacks below.
  */
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
-  pages: { signIn: "/" },
+  pages: { signIn: "/login" },
   providers: [
     CredentialsProvider({
       name: "SentinelSec",
@@ -40,8 +37,7 @@ export const authOptions: NextAuthOptions = {
             agentId: agent.id,
           };
         }
-
-        // Default: supervisor
+        // Supervisor
         const email = credentials?.email?.trim().toLowerCase();
         const password = credentials?.password ?? "";
         if (!email || !password) return null;
@@ -63,7 +59,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.name = user.name ?? token.name;
-        // @ts-expect-error — `role` and `agentId` are added by our custom user shape
+        // @ts-expect-error — role/agentId are added by our custom user shape
         token.role = user.role;
         // @ts-expect-error — agentId only exists for agents
         if (user.agentId) token.agentId = user.agentId;

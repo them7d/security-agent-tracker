@@ -5,15 +5,11 @@ import { startSimulator } from "@/lib/simulator";
 
 startSimulator();
 
-/**
- * GET /api/logs?type=geofence_exit&agentId=...&limit=100
- */
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const type = url.searchParams.get("type");
   const agentId = url.searchParams.get("agentId");
   const limit = Number(url.searchParams.get("limit") ?? 100);
-
   const logs = await db.attendanceLog.findMany({
     where: {
       ...(type ? { type } : {}),
@@ -23,6 +19,5 @@ export async function GET(req: Request) {
     orderBy: { createdAt: "desc" },
     take: limit,
   });
-
   return NextResponse.json(logs.map(serializeLog));
 }

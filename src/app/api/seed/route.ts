@@ -6,8 +6,6 @@ import type { LatLng } from "@/lib/types";
 
 startSimulator();
 
-// Reference downtown — Baghdad (Iraq). Agents are seeded in a ~500m radius.
-// Each gets a small rectangular geofence polygon centred on their start position.
 const HQ: LatLng = { lat: 33.3152, lng: 44.3661 };
 
 function squareAround(center: LatLng, halfSizeMeters = 80): LatLng[] {
@@ -24,16 +22,13 @@ function squareAround(center: LatLng, halfSizeMeters = 80): LatLng[] {
 }
 
 const SEED_AGENTS: Array<{
-  name: string;
-  badgeId: string;
-  phone: string;
-  areaLabel: string;
-  offset: LatLng; // offset from HQ in meters
+  name: string; badgeId: string; phone: string;
+  areaLabel: string; offset: LatLng;
 }> = [
-  { name: "Karim Haddad",     badgeId: "SC-0142", phone: "+964 770 112 4451", areaLabel: "Karkh gate",         offset: { lat:  60, lng:   0 } },
-  { name: "Layla Saleh",      badgeId: "SC-0143", phone: "+964 770 223 8810", areaLabel: "Rusafa market",      offset: { lat: -40, lng: 120 } },
-  { name: "Omar Najib",       badgeId: "SC-0144", phone: "+964 770 334 1290", areaLabel: "Mutanabbi Street",   offset: { lat:  20, lng: -90 } },
-  { name: "Dina Farouk",      badgeId: "SC-0145", phone: "+964 770 445 7723", areaLabel: "Tahrir square",      offset: { lat: -90, lng:  40 } },
+  { name: "Karim Haddad",  badgeId: "SC-0142", phone: "+964 770 112 4451", areaLabel: "Karkh gate",        offset: { lat:  60, lng:   0 } },
+  { name: "Layla Saleh",   badgeId: "SC-0143", phone: "+964 770 223 8810", areaLabel: "Rusafa market",     offset: { lat: -40, lng: 120 } },
+  { name: "Omar Najib",    badgeId: "SC-0144", phone: "+964 770 334 1290", areaLabel: "Mutanabbi Street",  offset: { lat:  20, lng: -90 } },
+  { name: "Dina Farouk",   badgeId: "SC-0145", phone: "+964 770 445 7723", areaLabel: "Tahrir square",     offset: { lat: -90, lng:  40 } },
 ];
 
 function metersToLatLng(ref: LatLng, offsetMeters: LatLng): LatLng {
@@ -45,12 +40,7 @@ function metersToLatLng(ref: LatLng, offsetMeters: LatLng): LatLng {
   };
 }
 
-/**
- * POST /api/seed
- * Idempotent: creates the supervisor + demo agents if missing.
- */
 export async function POST() {
-  // Supervisor
   const email = "supervisor@sentinel.sec";
   let supervisor = await db.supervisor.findUnique({ where: { email } });
   if (!supervisor) {
@@ -60,43 +50,33 @@ export async function POST() {
     });
   }
 
-  // Agents
   const created: string[] = [];
   for (const def of SEED_AGENTS) {
     const existing = await db.agent.findUnique({ where: { badgeId: def.badgeId } });
     if (existing) {
-      // Backfill PIN for legacy seeded rows
-      if (!existing.pin || existing.pin === "0000") {
-        await db.agent.update({
-          where: { id: existing.id },
-          data: { pin: def.badgeId.replace(/\D/g, "").slice(-4).padStart(4, "0") },
-        });
+      // Backfill PIN
+      const pin = def.badgeId.replace(/\D/g, "").slice(-4).padStart(4, "0");
+      if (!existing.pin || existing.pin === "0000" || existing.pin !== pin) {
+        await db.agent.update({ where: { id: existing.id }, data: { pin } });
       }
       continue;
     }
-
     const start = metersToLatLng(HQ, def.offset);
     const geofence = squareAround(start, 80);
     const agent = await db.agent.create({
       data: {
-        name: def.name,
-        badgeId: def.badgeId,
-        phone: def.phone,
+        name: def.name, badgeId: def.badgeId, phone: def.phone,
         pin: def.badgeId.replace(/\D/g, "").slice(-4).padStart(4, "0"),
-        lat: start.lat,
-        lng: start.lng,
+        lat: start.lat, lng: start.lng,
         areaLabel: def.areaLabel,
         geofence: JSON.stringify(geofence),
         status: "on_duty",
       },
     });
-
     await db.attendanceLog.create({
       data: {
-        agentId: agent.id,
-        type: "check_in",
-        lat: start.lat,
-        lng: start.lng,
+        agentId: agent.id, type: "check_in",
+        lat: start.lat, lng: start.lng,
         note: `Initial shift start at ${def.areaLabel}`,
       },
     });
@@ -109,5 +89,6 @@ export async function POST() {
     seededAgents: created,
     mapCenter: HQ,
     agentPinHint: "PIN = last 4 digits of badge ID (e.g. SC-0142 → 0142)",
+    database: "PostgreSQL 17",
   });
 }

@@ -7,20 +7,12 @@ import { startSimulator } from "@/lib/simulator";
 
 startSimulator();
 
-/**
- * PATCH /api/orders/[id]
- * Body: { status: "acknowledged" | "done" }
- *
- * Agents use this to acknowledge an order or mark it done.
- * Supervisors can also update status.
- */
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
   const body = await req.json().catch(() => null);
   if (!body || !["acknowledged", "done"].includes(body.status)) {
     return NextResponse.json(
@@ -28,15 +20,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       { status: 400 },
     );
   }
-
-  // For agents: only allow updating their own orders
   if (session.user.role === "agent") {
     const order = await db.order.findUnique({ where: { id } });
     if (!order || order.agentId !== session.user.agentId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
-
   try {
     const updated = await db.order.update({
       where: { id },

@@ -1,18 +1,14 @@
 // Shared domain types for SentinelSec agent tracking platform
 
 export type AgentStatus = "on_duty" | "off_duty" | "patrol";
-
 export type OrderPriority = "low" | "normal" | "high" | "critical";
-
 export type OrderStatus = "sent" | "acknowledged" | "done";
-
 export type AttendanceLogType =
   | "check_in"
   | "check_out"
   | "geofence_exit"
   | "geofence_reenter"
   | "manual";
-
 export type AlertType = "geofence_exit" | "geofence_reenter" | "offline" | "custom";
 
 export interface LatLng {
@@ -33,7 +29,6 @@ export interface AgentDTO {
   areaLabel: string | null;
   createdAt: string;
   updatedAt: string;
-  // Derived client-side flag: whether the agent is currently inside their geofence
   inGeofence: boolean;
 }
 

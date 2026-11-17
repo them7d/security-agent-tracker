@@ -6,16 +6,11 @@ import { ShieldCheck, LogOut, Bell, User2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAlerts } from "@/hooks/use-data";
+import { useAlerts, useDismissAlert } from "@/hooks/use-data";
 import { timeAgo } from "@/lib/format";
-import { useDismissAlert } from "@/hooks/use-data";
 
 export function TopBar() {
   const { data: session } = useSession();
@@ -36,7 +31,6 @@ export function TopBar() {
           </div>
         </div>
       </div>
-
       <div className="ml-auto flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -53,9 +47,7 @@ export function TopBar() {
           <DropdownMenuContent align="end" className="w-80 bg-popover border-border">
             <DropdownMenuLabel className="flex items-center justify-between">
               <span>Alerts</span>
-              <Badge variant="secondary" className="text-[10px]">
-                {unread.length} unread
-              </Badge>
+              <Badge variant="secondary" className="text-[10px]">{unread.length} unread</Badge>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {unread.length === 0 ? (
@@ -74,13 +66,9 @@ export function TopBar() {
                     <span className="text-xs font-medium truncate flex-1">
                       {a.agentName ?? "Agent"} · {a.agentBadge}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {timeAgo(a.createdAt)}
-                    </span>
+                    <span className="text-[10px] text-muted-foreground">{timeAgo(a.createdAt)}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground line-clamp-2">
-                    {a.message}
-                  </p>
+                  <p className="text-xs text-muted-foreground line-clamp-2">{a.message}</p>
                 </DropdownMenuItem>
               ))
             )}
@@ -93,23 +81,16 @@ export function TopBar() {
               <div className="h-7 w-7 rounded-full bg-primary/20 ring-1 ring-primary/40 flex items-center justify-center">
                 <User2 className="h-3.5 w-3.5 text-primary" />
               </div>
-              <span className="text-xs hidden sm:inline">
-                {session?.user?.name ?? "Supervisor"}
-              </span>
+              <span className="text-xs hidden sm:inline">{session?.user?.name ?? "Supervisor"}</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 bg-popover border-border">
             <DropdownMenuLabel className="text-xs">
               <div className="font-medium">{session?.user?.name}</div>
-              <div className="text-muted-foreground font-normal">
-                {session?.user?.email}
-              </div>
+              <div className="text-muted-foreground font-normal">{session?.user?.email}</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={() => signOut({ callbackUrl: "/" })}
-              className="text-destructive focus:text-destructive"
-            >
+            <DropdownMenuItem onSelect={() => signOut({ callbackUrl: "/" })} className="text-destructive focus:text-destructive">
               <LogOut className="h-4 w-4 mr-2" /> Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -11,13 +11,7 @@ const NAV: Array<{ id: AppView; label: string; icon: React.ComponentType<{ class
   { id: "logs",      label: "Logs",       icon: ScrollText },
 ];
 
-export function SideNav({
-  current,
-  onChange,
-}: {
-  current: AppView;
-  onChange: (v: AppView) => void;
-}) {
+export function SideNav({ current, onChange }: { current: AppView; onChange: (v: AppView) => void }) {
   return (
     <nav className="w-14 md:w-52 shrink-0 border-r border-border bg-sidebar flex flex-col py-4">
       {NAV.map((item) => {
@@ -43,7 +37,7 @@ export function SideNav({
       })}
       <div className="mt-auto px-4 hidden md:block">
         <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">
-          v1.0 · build 2025.11
+          v1.0 · PostgreSQL
         </p>
       </div>
     </nav>
