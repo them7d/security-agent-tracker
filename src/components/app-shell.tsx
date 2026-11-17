@@ -8,6 +8,7 @@ import { LoginCard } from "@/components/auth/login-card";
 import { DashboardView } from "@/components/dashboard/dashboard-view";
 import { MapView } from "@/components/map/map-view";
 import { LogsView } from "@/components/logs/logs-view";
+import { AgentIdlePage } from "@/components/agent/agent-idle-page";
 import { useSeed } from "@/hooks/use-data";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { AgentDTO } from "@/lib/types";
@@ -19,11 +20,17 @@ export function AppShell() {
   const seed = useSeed();
 
   // Ensure demo data exists on first authenticated render
+  // (only relevant for supervisor sessions — agents don't need seeding)
   React.useEffect(() => {
-    if (status === "authenticated" && !seed.isPending && !seed.data) {
+    if (
+      status === "authenticated" &&
+      session?.user?.role !== "agent" &&
+      !seed.isPending &&
+      !seed.data
+    ) {
       seed.mutate(undefined, { onError: () => {/* ignore */} });
     }
-  }, [status, seed]);
+  }, [status, session, seed]);
 
   if (status === "loading") {
     return (
@@ -35,6 +42,12 @@ export function AppShell() {
 
   if (!session?.user) {
     return <LoginCard />;
+  }
+
+  // Branch on role: agents get their own idle console, supervisors get the
+  // full dashboard / map / logs shell.
+  if (session.user.role === "agent") {
+    return <AgentIdlePage />;
   }
 
   function focusOnAgent(agent: AgentDTO) {

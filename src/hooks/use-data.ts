@@ -198,3 +198,43 @@ export function useSeed() {
     },
   });
 }
+
+/* ============================================================
+ * Current agent (for agent-role sessions)
+ * ============================================================ */
+export function useCurrentAgent() {
+  return useQuery<AgentDTO>({
+    queryKey: ["agent-me"],
+    queryFn: async () => {
+      const res = await fetch("/api/agents/me", { cache: "no-store" });
+      if (!res.ok) throw new Error("Not authenticated as agent");
+      return res.json();
+    },
+    refetchInterval: 4000,
+  });
+}
+
+/* ============================================================
+ * Acknowledge / mark-done an order
+ * ============================================================ */
+export function useUpdateOrderStatus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: { id: string; status: "acknowledged" | "done" }) => {
+      const res = await fetch(`/api/orders/${payload.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: payload.status }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Failed" }));
+        throw new Error(err.error ?? "Failed to update order");
+      }
+      return res.json();
+    },
+    onSuccess: (_data, _vars) => {
+      // Invalidate the per-agent list and the "all" list
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+  });
+}

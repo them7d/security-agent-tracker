@@ -24,6 +24,8 @@ model Agent {
   badgeId    String    @unique
   name       String
   phone      String?
+  /// 4-digit PIN used by the agent to sign in to the agent console (demo only; bcrypt in prod)
+  pin        String    @default("0000")
   /// on_duty | off_duty | patrol
   status     String    @default("off_duty")
   lat        Float

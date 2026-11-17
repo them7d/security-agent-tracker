@@ -64,7 +64,16 @@ export async function POST() {
   const created: string[] = [];
   for (const def of SEED_AGENTS) {
     const existing = await db.agent.findUnique({ where: { badgeId: def.badgeId } });
-    if (existing) continue;
+    if (existing) {
+      // Backfill PIN for legacy seeded rows
+      if (!existing.pin || existing.pin === "0000") {
+        await db.agent.update({
+          where: { id: existing.id },
+          data: { pin: def.badgeId.replace(/\D/g, "").slice(-4).padStart(4, "0") },
+        });
+      }
+      continue;
+    }
 
     const start = metersToLatLng(HQ, def.offset);
     const geofence = squareAround(start, 80);
@@ -73,6 +82,7 @@ export async function POST() {
         name: def.name,
         badgeId: def.badgeId,
         phone: def.phone,
+        pin: def.badgeId.replace(/\D/g, "").slice(-4).padStart(4, "0"),
         lat: start.lat,
         lng: start.lng,
         areaLabel: def.areaLabel,
@@ -98,5 +108,6 @@ export async function POST() {
     supervisorPassword: "Sentinel#2025",
     seededAgents: created,
     mapCenter: HQ,
+    agentPinHint: "PIN = last 4 digits of badge ID (e.g. SC-0142 → 0142)",
   });
 }
