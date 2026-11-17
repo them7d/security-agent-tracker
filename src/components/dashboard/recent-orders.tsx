@@ -14,14 +14,16 @@ const PRIORITY_CLASS: Record<OrderDTO["priority"], string> = {
   high:     "bg-amber-500/15 text-amber-300 border-amber-500/30",
   critical: "bg-red-500/15 text-red-300 border-red-500/30",
 };
+
 const STATUS_CLASS: Record<OrderDTO["status"], string> = {
-  sent:         "text-sky-300",
-  acknowledged: "text-amber-300",
-  done:         "text-emerald-300",
+  sent:          "text-sky-300",
+  acknowledged:  "text-amber-300",
+  done:          "text-emerald-300",
 };
 
 export function RecentOrders() {
   const { data: orders, isLoading } = useOrders();
+
   return (
     <Card className="border-border/60">
       <CardHeader className="py-3 flex flex-row items-center justify-between">

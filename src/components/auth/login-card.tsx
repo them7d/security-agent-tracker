@@ -7,7 +7,9 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ShieldCheck, Loader2, Lock, User2, IdCard, KeyRound, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,10 +23,15 @@ const supervisorSchema = z.object({
   email: z.string().email("Enter a valid email"),
   password: z.string().min(1, "Password is required"),
 });
+
 const agentSchema = z.object({
   badgeId: z.string().min(2, "Badge ID is required"),
-  pin: z.string().length(4, "PIN must be 4 digits").regex(/^\d{4}$/, "PIN must be 4 digits"),
+  pin: z
+    .string()
+    .length(4, "PIN must be 4 digits")
+    .regex(/^\d{4}$/, "PIN must be 4 digits"),
 });
+
 type SupervisorValues = z.infer<typeof supervisorSchema>;
 type AgentValues = z.infer<typeof agentSchema>;
 
@@ -36,8 +43,12 @@ export function LoginCard() {
 
   const supervisorForm = useForm<SupervisorValues>({
     resolver: zodResolver(supervisorSchema),
-    defaultValues: { email: "supervisor@sentinel.sec", password: "Sentinel#2025" },
+    defaultValues: {
+      email: "supervisor@sentinel.sec",
+      password: "Sentinel#2025",
+    },
   });
+
   const agentForm = useForm<AgentValues>({
     resolver: zodResolver(agentSchema),
     defaultValues: { badgeId: "SC-0142", pin: "0142" },
@@ -48,18 +59,22 @@ export function LoginCard() {
     try {
       const res = await signIn("credentials", {
         role: "supervisor",
-        email: values.email, password: values.password,
+        email: values.email,
+        password: values.password,
         redirect: false,
       });
       if (!res || res.error) {
         toast.error("Invalid supervisor credentials.");
         return;
       }
+      // Critical: forces useSession to refetch the new JWT-bearing cookie
       await update();
       toast.success("Authenticated. Welcome back, Supervisor.");
       router.replace("/dashboard");
       router.refresh();
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function onAgentSubmit(values: AgentValues) {
@@ -67,7 +82,8 @@ export function LoginCard() {
     try {
       const res = await signIn("credentials", {
         role: "agent",
-        badgeId: values.badgeId, pin: values.pin,
+        badgeId: values.badgeId,
+        pin: values.pin,
         redirect: false,
       });
       if (!res || res.error) {
@@ -78,7 +94,9 @@ export function LoginCard() {
       toast.success("Shift started. Opening agent console…");
       router.replace("/agent");
       router.refresh();
-    } finally { setSubmitting(false); }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -96,13 +114,16 @@ export function LoginCard() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Role toggle */}
           <div className="grid grid-cols-2 gap-1 mb-5 p-1 rounded-md bg-secondary/60 border border-border">
             <button
               type="button"
               onClick={() => setRole("supervisor")}
               className={cn(
                 "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                role === "supervisor" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                role === "supervisor"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <User2 className="h-3.5 w-3.5" /> Supervisor
@@ -112,7 +133,9 @@ export function LoginCard() {
               onClick={() => setRole("agent")}
               className={cn(
                 "flex items-center justify-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors",
-                role === "agent" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                role === "agent"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <IdCard className="h-3.5 w-3.5" /> Agent
@@ -120,50 +143,108 @@ export function LoginCard() {
           </div>
 
           {role === "supervisor" ? (
-            <form onSubmit={supervisorForm.handleSubmit(onSupervisorSubmit)} className="space-y-4">
+            <form
+              onSubmit={supervisorForm.handleSubmit(onSupervisorSubmit)}
+              className="space-y-4"
+            >
               <div className="space-y-1.5">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Email</Label>
-                <Input type="email" autoComplete="email" className="bg-secondary/40" {...supervisorForm.register("email")} />
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Email
+                </Label>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  className="bg-secondary/40"
+                  {...supervisorForm.register("email")}
+                />
                 {supervisorForm.formState.errors.email && (
-                  <p className="text-xs text-destructive">{supervisorForm.formState.errors.email.message}</p>
+                  <p className="text-xs text-destructive">
+                    {supervisorForm.formState.errors.email.message}
+                  </p>
                 )}
               </div>
+
               <div className="space-y-1.5">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Password</Label>
-                <Input type="password" autoComplete="current-password" className="bg-secondary/40" {...supervisorForm.register("password")} />
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Password
+                </Label>
+                <Input
+                  type="password"
+                  autoComplete="current-password"
+                  className="bg-secondary/40"
+                  {...supervisorForm.register("password")}
+                />
                 {supervisorForm.formState.errors.password && (
-                  <p className="text-xs text-destructive">{supervisorForm.formState.errors.password.message}</p>
+                  <p className="text-xs text-destructive">
+                    {supervisorForm.formState.errors.password.message}
+                  </p>
                 )}
               </div>
+
               <Button type="submit" disabled={submitting} className="w-full">
                 {submitting ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Authenticating…</>
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Authenticating…
+                  </>
                 ) : (
-                  <><Lock className="h-4 w-4 mr-2" /> Sign in to supervisor console</>
+                  <>
+                    <Lock className="h-4 w-4 mr-2" /> Sign in to supervisor console
+                  </>
                 )}
               </Button>
             </form>
           ) : (
-            <form onSubmit={agentForm.handleSubmit(onAgentSubmit)} className="space-y-4">
+            <form
+              onSubmit={agentForm.handleSubmit(onAgentSubmit)}
+              className="space-y-4"
+            >
               <div className="space-y-1.5">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">Badge ID</Label>
-                <Input type="text" autoComplete="username" placeholder="SC-0142" className="bg-secondary/40 font-mono" {...agentForm.register("badgeId")} />
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Badge ID
+                </Label>
+                <Input
+                  type="text"
+                  autoComplete="username"
+                  placeholder="SC-0142"
+                  className="bg-secondary/40 font-mono"
+                  {...agentForm.register("badgeId")}
+                />
                 {agentForm.formState.errors.badgeId && (
-                  <p className="text-xs text-destructive">{agentForm.formState.errors.badgeId.message}</p>
+                  <p className="text-xs text-destructive">
+                    {agentForm.formState.errors.badgeId.message}
+                  </p>
                 )}
               </div>
+
               <div className="space-y-1.5">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground">PIN (4 digits)</Label>
-                <Input type="password" inputMode="numeric" maxLength={4} autoComplete="current-password" placeholder="0142" className="bg-secondary/40 font-mono tracking-[0.4em]" {...agentForm.register("pin")} />
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground">
+                  PIN (4 digits)
+                </Label>
+                <Input
+                  type="password"
+                  inputMode="numeric"
+                  maxLength={4}
+                  autoComplete="current-password"
+                  placeholder="0142"
+                  className="bg-secondary/40 font-mono tracking-[0.4em]"
+                  {...agentForm.register("pin")}
+                />
                 {agentForm.formState.errors.pin && (
-                  <p className="text-xs text-destructive">{agentForm.formState.errors.pin.message}</p>
+                  <p className="text-xs text-destructive">
+                    {agentForm.formState.errors.pin.message}
+                  </p>
                 )}
               </div>
+
               <Button type="submit" disabled={submitting} className="w-full">
                 {submitting ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Authenticating…</>
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Authenticating…
+                  </>
                 ) : (
-                  <><KeyRound className="h-4 w-4 mr-2" /> Start shift</>
+                  <>
+                    <KeyRound className="h-4 w-4 mr-2" /> Start shift
+                  </>
                 )}
               </Button>
             </form>
@@ -172,26 +253,37 @@ export function LoginCard() {
           <div className="mt-6">
             <Separator />
             <div className="mt-4 text-xs text-muted-foreground space-y-1">
-              <p className="font-mono uppercase tracking-wider text-[10px]">Demo credentials</p>
+              <Link href="/" className="inline-flex items-center gap-1 text-primary hover:underline">
+                <ArrowLeft className="h-3 w-3" /> Back to home
+              </Link>
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground space-y-1">
+              <p className="font-mono uppercase tracking-wider text-[10px]">
+                Demo credentials
+              </p>
               {role === "supervisor" ? (
                 <>
-                  <p><span className="text-foreground/80">email</span> · supervisor@sentinel.sec</p>
-                  <p><span className="text-foreground/80">pass</span> · Sentinel#2025</p>
+                  <p>
+                    <span className="text-foreground/80">email</span> · supervisor@sentinel.sec
+                  </p>
+                  <p>
+                    <span className="text-foreground/80">pass</span> · Sentinel#2025
+                  </p>
                 </>
               ) : (
                 <>
-                  <p><span className="text-foreground/80">badge</span> · SC-0142</p>
-                  <p><span className="text-foreground/80">pin</span> · 0142 (last 4 of badge)</p>
-                  <p className="text-[10px] italic mt-1">Agents: SC-0142 → 0142, SC-0143 → 0143, SC-0144 → 0144, SC-0145 → 0145</p>
+                  <p>
+                    <span className="text-foreground/80">badge</span> · SC-0142
+                  </p>
+                  <p>
+                    <span className="text-foreground/80">pin</span> · 0142 (last 4 of badge)
+                  </p>
+                  <p className="text-[10px] italic mt-1">
+                    Agents: SC-0142 → 0142, SC-0143 → 0143, SC-0144 → 0144, SC-0145 → 0145
+                  </p>
                 </>
               )}
             </div>
-          </div>
-
-          <div className="mt-4">
-            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => router.replace("/")}>
-              <ArrowLeft className="h-3.5 w-3.5 mr-1.5" /> Back to home
-            </Button>
           </div>
         </CardContent>
       </Card>

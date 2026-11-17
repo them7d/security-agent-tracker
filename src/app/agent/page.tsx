@@ -16,6 +16,7 @@ export default function AgentPage() {
       router.replace("/login");
       return;
     }
+    // Bounce supervisors to the dashboard
     if (session.user.role === "supervisor") {
       router.replace("/dashboard");
     }

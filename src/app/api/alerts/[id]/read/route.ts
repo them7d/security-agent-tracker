@@ -4,6 +4,10 @@ import { startSimulator } from "@/lib/simulator";
 
 startSimulator();
 
+/**
+ * POST /api/alerts/:id/read
+ * Marks a single alert as read.
+ */
 export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
@@ -14,6 +18,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   }
 }
 
+/**
+ * DELETE /api/alerts/:id/read  (semantically: dismiss)
+ */
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {

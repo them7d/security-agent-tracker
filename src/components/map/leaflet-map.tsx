@@ -16,12 +16,19 @@ interface Props {
   focusAgentId?: string | null;
 }
 
+// Dark tiles via CARTO — no API key required
 const TILE_URL = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 const TILE_ATTR =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 export default function LeafletMap({
-  agents, selectedId, draftPoints, drawingAgentId, onClickPoint, onSelectAgent, focusAgentId,
+  agents,
+  selectedId,
+  draftPoints,
+  drawingAgentId,
+  onClickPoint,
+  onSelectAgent,
+  focusAgentId,
 }: Props) {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const mapRef = React.useRef<L.Map | null>(null);
@@ -31,18 +38,29 @@ export default function LeafletMap({
   const draftLayerRef = React.useRef<L.Polygon | null>(null);
   const draftMarkersRef = React.useRef<L.Marker[]>([]);
 
+  /* ---------------- Map bootstrap ---------------- */
   React.useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, {
       center: [HQ_DEFAULT.lat, HQ_DEFAULT.lng],
-      zoom: 14, zoomControl: true, attributionControl: true, preferCanvas: false,
+      zoom: 14,
+      zoomControl: true,
+      attributionControl: true,
+      preferCanvas: false,
     });
     tileLayerRef.current = L.tileLayer(TILE_URL, {
-      attribution: TILE_ATTR, subdomains: "abcd", maxZoom: 19,
+      attribution: TILE_ATTR,
+      subdomains: "abcd",
+      maxZoom: 19,
     }).addTo(map);
     mapRef.current = map;
-    const ro = new ResizeObserver(() => map.invalidateSize());
+
+    // Resize observer — Leaflet needs invalidateSize when container resizes
+    const ro = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
     ro.observe(containerRef.current);
+
     return () => {
       ro.disconnect();
       map.remove();
@@ -55,6 +73,7 @@ export default function LeafletMap({
     };
   }, []);
 
+  /* ---------------- Map click for drawing ---------------- */
   React.useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -62,19 +81,28 @@ export default function LeafletMap({
       onClickPoint({ lat: e.latlng.lat, lng: e.latlng.lng });
     };
     map.on("click", handler);
-    return () => { map.off("click", handler); };
+    return () => {
+      map.off("click", handler);
+    };
   }, [onClickPoint]);
 
+  /* ---------------- Cursor style when drawing ---------------- */
   React.useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     const container = map.getContainer();
-    container.style.cursor = draftPoints !== null ? "crosshair" : "";
+    if (draftPoints !== null) {
+      container.style.cursor = "crosshair";
+    } else {
+      container.style.cursor = "";
+    }
   }, [draftPoints]);
 
+  /* ---------------- Geofence polygons ---------------- */
   React.useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+
     const seen = new Set<string>();
     for (const agent of agents) {
       seen.add(agent.id);
@@ -85,12 +113,20 @@ export default function LeafletMap({
         const fill = outside ? "#ef4444" : "#f5a524";
         if (existing) {
           existing.setLatLngs(latlngs);
-          existing.setStyle({ color: fill, fillColor: fill, fillOpacity: outside ? 0.18 : 0.08 });
+          existing.setStyle({
+            color: fill,
+            fillColor: fill,
+            fillOpacity: outside ? 0.18 : 0.08,
+          });
         } else {
           const poly = L.polygon(latlngs, {
-            color: fill, weight: 1.5, opacity: 0.9,
-            fillColor: fill, fillOpacity: outside ? 0.18 : 0.08,
-            dashArray: outside ? "4,4" : undefined, interactive: false,
+            color: fill,
+            weight: 1.5,
+            opacity: 0.9,
+            fillColor: fill,
+            fillOpacity: outside ? 0.18 : 0.08,
+            dashArray: outside ? "4,4" : undefined,
+            interactive: false,
           }).addTo(map);
           geofenceRef.current.set(agent.id, poly);
         }
@@ -99,14 +135,21 @@ export default function LeafletMap({
         geofenceRef.current.delete(agent.id);
       }
     }
+
+    // Drop polygons for removed agents
     for (const [id, poly] of geofenceRef.current.entries()) {
-      if (!seen.has(id)) { poly.remove(); geofenceRef.current.delete(id); }
+      if (!seen.has(id)) {
+        poly.remove();
+        geofenceRef.current.delete(id);
+      }
     }
   }, [agents]);
 
+  /* ---------------- Agent markers ---------------- */
   React.useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
+
     const seen = new Set<string>();
     for (const agent of agents) {
       seen.add(agent.id);
@@ -114,10 +157,13 @@ export default function LeafletMap({
       const outside = hasGeofence && !agent.inGeofence;
       const isSelected = agent.id === selectedId;
       const isDrawingTarget = agent.id === drawingAgentId;
+
       const color =
         outside ? "#ef4444" :
         agent.status === "on_duty" ? "#10b981" :
-        agent.status === "patrol" ? "#38bdf8" : "#94a3b8";
+        agent.status === "patrol" ? "#38bdf8" :
+        "#94a3b8";
+
       const icon = L.divIcon({
         className: "",
         html: `
@@ -126,33 +172,52 @@ export default function LeafletMap({
                  style="position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;background:${color};opacity:0.35;"></div>
             <div style="position:absolute;left:-10px;top:-10px;width:20px;height:20px;border-radius:50%;
                         background:${color};border:2px solid ${isSelected ? "#fff" : "#0a0e1a"};
-                        box-shadow:0 0 0 ${isDrawingTarget ? "4px" : "2px"} ${isDrawingTarget ? "#f5a524" : "rgba(0,0,0,0.4)"};"></div>
+                        box-shadow:0 0 0 ${isDrawingTarget ? "4px" : "2px"} ${isDrawingTarget ? "#f5a524" : "rgba(0,0,0,0.4)"};">
+            </div>
           </div>
         `,
         iconSize: [0, 0],
       });
+
       const existing = markersRef.current.get(agent.id);
       if (existing) {
         existing.setLatLng([agent.lat, agent.lng]);
         existing.setIcon(icon);
       } else {
-        const marker = L.marker([agent.lat, agent.lng], { icon, zIndexOffset: 1000 }).addTo(map);
+        const marker = L.marker([agent.lat, agent.lng], {
+          icon,
+          zIndexOffset: 1000,
+        }).addTo(map);
         marker.on("click", () => onSelectAgent(agent));
         markersRef.current.set(agent.id, marker);
       }
     }
+
+    // Drop markers for removed agents
     for (const [id, marker] of markersRef.current.entries()) {
-      if (!seen.has(id)) { marker.remove(); markersRef.current.delete(id); }
+      if (!seen.has(id)) {
+        marker.remove();
+        markersRef.current.delete(id);
+      }
     }
   }, [agents, selectedId, drawingAgentId, onSelectAgent]);
 
+  /* ---------------- Draft polygon while drawing ---------------- */
   React.useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    if (draftLayerRef.current) { draftLayerRef.current.remove(); draftLayerRef.current = null; }
+
+    // Clear old draft layers
+    if (draftLayerRef.current) {
+      draftLayerRef.current.remove();
+      draftLayerRef.current = null;
+    }
     draftMarkersRef.current.forEach((m) => m.remove());
     draftMarkersRef.current = [];
+
     if (!draftPoints || draftPoints.length === 0) return;
+
+    // Vertex markers (small amber dots)
     for (let i = 0; i < draftPoints.length; i++) {
       const p = draftPoints[i];
       const idx = i + 1;
@@ -161,8 +226,10 @@ export default function LeafletMap({
           className: "",
           html: `
             <div style="position:relative;width:18px;height:18px;left:-9px;top:-9px;">
-              <div style="width:18px;height:18px;border-radius:50%;background:#f5a524;border:2px solid #0a0e1a;"></div>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#0a0e1a;font-size:9px;font-weight:700;font-family:monospace;">${idx}</div>
+              <div style="width:18px;height:18px;border-radius:50%;background:#f5a524;
+                          border:2px solid #0a0e1a;"></div>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+                          color:#0a0e1a;font-size:9px;font-weight:700;font-family:monospace;">${idx}</div>
             </div>
           `,
           iconSize: [18, 18],
@@ -171,21 +238,31 @@ export default function LeafletMap({
       }).addTo(map);
       draftMarkersRef.current.push(m);
     }
+
     if (draftPoints.length >= 2) {
       const latlngs: L.LatLngExpression[] = draftPoints.map((p) => [p.lat, p.lng]);
+      // If >= 3, draw polygon (closed). Otherwise draw a polyline preview.
       if (draftPoints.length >= 3) {
         draftLayerRef.current = L.polygon(latlngs, {
-          color: "#f5a524", weight: 1.5, dashArray: "4,4",
-          fillColor: "#f5a524", fillOpacity: 0.12, interactive: false,
+          color: "#f5a524",
+          weight: 1.5,
+          dashArray: "4,4",
+          fillColor: "#f5a524",
+          fillOpacity: 0.12,
+          interactive: false,
         }).addTo(map);
       } else {
         draftLayerRef.current = L.polyline(latlngs, {
-          color: "#f5a524", weight: 1.5, dashArray: "4,4", interactive: false,
+          color: "#f5a524",
+          weight: 1.5,
+          dashArray: "4,4",
+          interactive: false,
         }).addTo(map);
       }
     }
   }, [draftPoints]);
 
+  /* ---------------- Focus when an agent is selected or focusAgentId is set ---------------- */
   React.useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -193,7 +270,9 @@ export default function LeafletMap({
     if (!targetId) return;
     const agent = agents.find((a) => a.id === targetId);
     if (!agent) return;
-    map.setView([agent.lat, agent.lng], Math.max(map.getZoom(), 16), { animate: true });
+    map.setView([agent.lat, agent.lng], Math.max(map.getZoom(), 16), {
+      animate: true,
+    });
   }, [focusAgentId, selectedId, agents]);
 
   return <div ref={containerRef} className="absolute inset-0" />;

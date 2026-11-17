@@ -4,14 +4,22 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
 /**
- * Single Credentials provider handling BOTH:
- *   - supervisor (email + password)
- *   - agent (badgeId + pin)
+ * Single Credentials provider that authenticates EITHER:
+ *   - a Supervisor (role === "supervisor") via email + password, OR
+ *   - an Agent        (role === "agent")       via badgeId + pin
+ *
  * The role is passed in from the client via the `role` credential field.
+ * The returned user object carries `role` and (for agents) `agentId`, which
+ * are propagated through the JWT and Session callbacks below.
  */
 export const authOptions: NextAuthOptions = {
+  // Trust the request's Host header instead of requiring NEXTAUTH_URL to
+  // match an external domain. Combined with NEXTAUTH_URL=http://localhost:3000
+  // in .env, this makes NextAuth fully internal — no external preview URL,
+  // no NEXTAUTH_URL warning in the dev log.
+  trustHost: true,
   session: { strategy: "jwt" },
-  pages: { signIn: "/login" },
+  pages: { signIn: "/" },
   providers: [
     CredentialsProvider({
       name: "SentinelSec",
@@ -37,7 +45,8 @@ export const authOptions: NextAuthOptions = {
             agentId: agent.id,
           };
         }
-        // Supervisor
+
+        // Default: supervisor
         const email = credentials?.email?.trim().toLowerCase();
         const password = credentials?.password ?? "";
         if (!email || !password) return null;
@@ -59,7 +68,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.name = user.name ?? token.name;
-        // @ts-expect-error — role/agentId are added by our custom user shape
+        // @ts-expect-error — `role` and `agentId` are added by our custom user shape
         token.role = user.role;
         // @ts-expect-error — agentId only exists for agents
         if (user.agentId) token.agentId = user.agentId;

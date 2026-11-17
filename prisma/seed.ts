@@ -1,8 +1,6 @@
 // Standalone Prisma seed script.
 // Run with: bun run db:seed
-//
-// Idempotent: creates the demo supervisor + 4 demo agents only if they don't
-// already exist. Safe to re-run after `db:migrate:deploy` on a fresh DB.
+// Idempotent: creates the demo supervisor + 4 demo agents only if they don't exist.
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
@@ -41,7 +39,6 @@ const SEED_AGENTS = [
 ] as const;
 
 async function main() {
-  // Supervisor
   const email = "supervisor@sentinel.sec";
   let supervisor = await db.supervisor.findUnique({ where: { email } });
   if (!supervisor) {
@@ -54,13 +51,11 @@ async function main() {
     console.log(`• Supervisor already exists: ${supervisor.email}`);
   }
 
-  // Agents
   const created: string[] = [];
   for (const def of SEED_AGENTS) {
     const pin = def.badgeId.replace(/\D/g, "").slice(-4).padStart(4, "0");
     const existing = await db.agent.findUnique({ where: { badgeId: def.badgeId } });
     if (existing) {
-      // Backfill PIN if missing
       if (!existing.pin || existing.pin === "0000" || existing.pin !== pin) {
         await db.agent.update({ where: { id: existing.id }, data: { pin } });
         console.log(`• Updated agent ${def.badgeId} pin → ${pin}`);
@@ -94,17 +89,11 @@ async function main() {
   console.log("");
   console.log("==========================================================");
   console.log("SentinelSec seed complete");
-  console.log("----------------------------------------------------------");
-  console.log(`Supervisor email: ${supervisor.email}`);
-  console.log(`Supervisor password: Sentinel#2025`);
-  console.log(`Agents created: ${created.length}`);
-  console.log(`Agent PINs: SC-0142→0142, SC-0143→0143, SC-0144→0144, SC-0145→0145`);
+  console.log(`Supervisor: ${supervisor.email} / Sentinel#2025`);
+  console.log(`Agents: SC-0142→0142, SC-0143→0143, SC-0144→0144, SC-0145→0145`);
   console.log("==========================================================");
 }
 
 main()
-  .catch((e) => {
-    console.error("Seed failed:", e);
-    process.exit(1);
-  })
+  .catch((e) => { console.error("Seed failed:", e); process.exit(1); })
   .finally(() => db.$disconnect());

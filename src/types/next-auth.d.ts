@@ -10,6 +10,7 @@ declare module "next-auth" {
       agentId?: string;
     };
   }
+
   interface User {
     role?: "supervisor" | "agent";
     agentId?: string;

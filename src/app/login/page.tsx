@@ -10,6 +10,7 @@ export default function LoginPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  // If already authenticated, bounce to the role-appropriate page.
   React.useEffect(() => {
     if (status === "authenticated" && session?.user) {
       router.replace(session.user.role === "agent" ? "/agent" : "/dashboard");
@@ -17,7 +18,11 @@ export default function LoginPage() {
   }, [status, session, router]);
 
   if (status === "loading" || status === "authenticated") {
-    return <FullScreenLoader label={status === "authenticated" ? "Redirecting…" : "Loading session…"} />;
+    return (
+      <FullScreenLoader
+        label={status === "authenticated" ? "Redirecting…" : "Loading session…"}
+      />
+    );
   }
 
   return <LoginCard />;

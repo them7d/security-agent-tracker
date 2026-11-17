@@ -1,20 +1,18 @@
 #!/bin/sh
 # docker-entrypoint.sh — runs on container start.
-# Applies pending Prisma migrations, seeds demo data if the DB is empty,
-# then starts the Next.js standalone server.
+# Applies Prisma migrations, seeds demo data, then starts Next.js.
+# DATABASE_URL is provided by docker-compose (points at the `postgres` service).
 
 set -e
 
 echo "=========================================================="
 echo "SentinelSec container starting"
-echo "=========================================================="
 echo "DATABASE_URL: ${DATABASE_URL:-<not set>}"
 echo "NEXTAUTH_URL: ${NEXTAUTH_URL:-<not set>}"
-echo ""
+echo "=========================================================="
 
-# ---- 1. Apply migrations ----
 if [ -z "$DATABASE_URL" ]; then
-  echo "ERROR: DATABASE_URL is not set. Provide it via env or docker-compose."
+  echo "ERROR: DATABASE_URL is not set. Provide it via docker-compose environment."
   exit 1
 fi
 
@@ -22,14 +20,11 @@ echo "[1/3] Applying Prisma migrations…"
 bunx prisma migrate deploy
 echo "      ✓ Migrations applied"
 
-# ---- 2. Seed if empty ----
 echo "[2/3] Seeding demo data (idempotent)…"
 DATABASE_URL="$DATABASE_URL" bun prisma/seed.ts || {
-  echo "      ! Seed step failed (may already be seeded); continuing"
+  echo "      ! Seed step reported an error (may already be seeded); continuing"
 }
 echo "      ✓ Seed complete"
 
-# ---- 3. Start Next.js ----
 echo "[3/3] Starting Next.js standalone server on port ${PORT:-3000}…"
-echo ""
 exec node ./server.js

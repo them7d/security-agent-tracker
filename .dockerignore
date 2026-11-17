@@ -1,26 +1,21 @@
 # Version control
 .git
 .gitignore
-.gitattributes
 
-# Dependencies (will be re-installed inside the image)
+# Dependencies (re-installed inside the image)
 node_modules
 
-# Next.js build output (will be rebuilt inside the image)
+# Next.js build output (rebuilt inside)
 .next
 out
 build
-dist
 
 # Logs
 *.log
 dev.log
 server.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
-# Env files (the container reads env from docker-compose / runtime env)
+# Env files (container reads env from docker-compose)
 .env
 .env.*
 !.env.example
@@ -28,8 +23,7 @@ yarn-error.log*
 # Docker files themselves
 Dockerfile
 .dockerignore
-docker-compose.yml
-docker-compose.*.yml
+docker-compose*.yml
 
 # IDE / OS
 .vscode
@@ -37,18 +31,12 @@ docker-compose.*.yml
 .DS_Store
 *.swp
 
-# Project-specific scratch
+# Project scratch
 download/
 upload/
 tests/
 skills/
 .zscripts/
-*.tar
-
-# Prisma local SQLite (we use Postgres in the container)
 db/
-
-# Misc
-README.md
-*.md
-!prisma/seed.ts
+*.tar
+tool-results/

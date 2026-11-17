@@ -43,31 +43,53 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ===========================================================
+   SentinelSec — security operations dark theme (default)
+   Dark navy backgrounds + amber accent + JetBrains-ish mono
+   =========================================================== */
 :root {
   --radius: 0.5rem;
-  --background: #0a0e1a;
-  --foreground: #e7ecf3;
-  --card: #111827;
+
+  /* Surfaces — graduated navy */
+  --background: #0a0e1a;          /* page bg */
+  --foreground: #e7ecf3;          /* primary text */
+  --card: #111827;                /* card surface */
   --card-foreground: #e7ecf3;
   --popover: #111827;
   --popover-foreground: #e7ecf3;
+
+  /* Primary = amber (signal / action) */
   --primary: #f5a524;
   --primary-foreground: #0a0e1a;
+
+  /* Secondary = steel */
   --secondary: #1c2536;
   --secondary-foreground: #c7d2dc;
+
   --muted: #161d2c;
   --muted-foreground: #8b95a6;
+
+  /* Accent = subtle navy hover */
   --accent: #1c2536;
   --accent-foreground: #e7ecf3;
+
   --destructive: #ef4444;
   --border: #1f2a3d;
   --input: #1f2a3d;
   --ring: #f5a524;
+
+  /* Status accents */
+  --status-ok: #10b981;
+  --status-warn: #f5a524;
+  --status-danger: #ef4444;
+  --status-info: #38bdf8;
+
   --chart-1: #f5a524;
   --chart-2: #10b981;
   --chart-3: #38bdf8;
   --chart-4: #ef4444;
   --chart-5: #a78bfa;
+
   --sidebar: #0d1320;
   --sidebar-foreground: #e7ecf3;
   --sidebar-primary: #f5a524;
@@ -79,6 +101,7 @@
 }
 
 .dark {
+  /* Mirror root so dark mode stays consistent */
   --background: #0a0e1a;
   --foreground: #e7ecf3;
   --card: #111827;
@@ -113,65 +136,95 @@
 }
 
 @layer base {
-  * { @apply border-border outline-ring/50; }
+  * {
+    @apply border-border outline-ring/50;
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "ss01", "cv01";
   }
-  ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #1f2a3d; border-radius: 4px; }
-  ::-webkit-scrollbar-thumb:hover { background: #2a3a55; }
+  /* Scrollbars — tactical thin style */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1f2a3d;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2a3a55;
+  }
 }
 
+/* ===========================================================
+   Leaflet overrides — recolour to match the dark tactical map
+   =========================================================== */
 .leaflet-container {
   background: #0a0e1a !important;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
-.leaflet-bar a, .leaflet-control-attribution, .leaflet-control-zoom {
-  background: #111827 !important; color: #e7ecf3 !important;
+.leaflet-bar a,
+.leaflet-control-attribution,
+.leaflet-control-zoom {
+  background: #111827 !important;
+  color: #e7ecf3 !important;
   border-color: #1f2a3d !important;
 }
-.leaflet-bar a:hover { background: #1c2536 !important; }
+.leaflet-bar a:hover {
+  background: #1c2536 !important;
+}
 .leaflet-control-attribution {
   background: rgba(13, 19, 32, 0.85) !important;
-  color: #8b95a6 !important; font-size: 10px !important;
+  color: #8b95a6 !important;
+  font-size: 10px !important;
 }
-.leaflet-control-attribution a { color: #8b95a6 !important; }
-.leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  background: #111827 !important; color: #e7ecf3 !important;
+.leaflet-control-attribution a {
+  color: #8b95a6 !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #111827 !important;
+  color: #e7ecf3 !important;
   border: 1px solid #1f2a3d !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 .leaflet-popup-content {
-  margin: 8px 12px !important; font-size: 12px !important;
+  margin: 8px 12px !important;
+  font-size: 12px !important;
 }
 
+/* Agent marker pulse */
 @keyframes agent-pulse {
   0%   { transform: scale(0.6); opacity: 0.8; }
   70%  { transform: scale(1.6); opacity: 0; }
   100% { transform: scale(0.6); opacity: 0; }
 }
-.agent-marker__pulse { animation: agent-pulse 2.4s ease-out infinite; }
+.agent-marker__pulse {
+  animation: agent-pulse 2.4s ease-out infinite;
+}
 
 @keyframes agent-pulse-danger {
   0%   { transform: scale(0.6); opacity: 0.85; }
   70%  { transform: scale(1.9); opacity: 0; }
   100% { transform: scale(0.6); opacity: 0; }
 }
-.agent-marker__pulse--danger { animation: agent-pulse-danger 1.1s ease-out infinite; }
+.agent-marker__pulse--danger {
+  animation: agent-pulse-danger 1.1s ease-out infinite;
+}
 
+/* Grid background for the dashboard */
 .tactical-grid {
   background-image:
     linear-gradient(to right, rgba(31, 42, 61, 0.5) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(31, 42, 61, 0.5) 1px, transparent 1px);
   background-size: 24px 24px;
 }
-.tabular { font-variant-numeric: tabular-nums; }
 
-/* Home page hero gradient */
-.hero-radial {
-  background:
-    radial-gradient(circle at 20% 20%, rgba(245, 165, 36, 0.08), transparent 40%),
-    radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.06), transparent 40%);
+/* Tabular numbers for data tables */
+.tabular {
+  font-variant-numeric: tabular-nums;
 }

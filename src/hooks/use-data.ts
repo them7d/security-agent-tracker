@@ -2,10 +2,18 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type {
-  AgentDTO, AgentStatus, AlertDTO, AttendanceLogDTO,
-  LatLng, OrderDTO, OrderPriority,
+  AgentDTO,
+  AgentStatus,
+  AlertDTO,
+  AttendanceLogDTO,
+  LatLng,
+  OrderDTO,
+  OrderPriority,
 } from "@/lib/types";
 
+/* ============================================================
+ * Agents
+ * ============================================================ */
 export function useAgents() {
   return useQuery<AgentDTO[]>({
     queryKey: ["agents"],
@@ -14,6 +22,7 @@ export function useAgents() {
       if (!res.ok) throw new Error("Failed to load agents");
       return res.json();
     },
+    // Poll every 3 seconds for live GPS positions
     refetchInterval: 3000,
   });
 }
@@ -22,8 +31,13 @@ export function useCreateAgent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: {
-      name: string; badgeId: string; phone?: string;
-      lat: number; lng: number; areaLabel?: string; geofence?: LatLng[];
+      name: string;
+      badgeId: string;
+      phone?: string;
+      lat: number;
+      lng: number;
+      areaLabel?: string;
+      geofence?: LatLng[];
     }) => {
       const res = await fetch("/api/agents", {
         method: "POST",
@@ -61,8 +75,12 @@ export function useUpdateAgent() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: {
-      id: string; geofence?: LatLng[]; areaLabel?: string;
-      status?: AgentStatus; name?: string; phone?: string;
+      id: string;
+      geofence?: LatLng[];
+      areaLabel?: string;
+      status?: AgentStatus;
+      name?: string;
+      phone?: string;
     }) => {
       const res = await fetch(`/api/agents/${payload.id}`, {
         method: "PATCH",
@@ -76,6 +94,9 @@ export function useUpdateAgent() {
   });
 }
 
+/* ============================================================
+ * Orders
+ * ============================================================ */
 export function useOrders(agentId?: string) {
   return useQuery<OrderDTO[]>({
     queryKey: ["orders", agentId ?? "all"],
@@ -85,7 +106,7 @@ export function useOrders(agentId?: string) {
       if (!res.ok) throw new Error("Failed to load orders");
       return res.json();
     },
-    refetchInterval: 3000,
+    refetchInterval: 8000,
   });
 }
 
@@ -93,7 +114,9 @@ export function useSendOrder() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (payload: {
-      agentId: string; body: string; priority: OrderPriority;
+      agentId: string;
+      body: string;
+      priority: OrderPriority;
     }) => {
       const res = await fetch("/api/orders", {
         method: "POST",
@@ -110,6 +133,9 @@ export function useSendOrder() {
   });
 }
 
+/* ============================================================
+ * Logs
+ * ============================================================ */
 export function useLogs(filters?: { type?: string; agentId?: string }) {
   return useQuery<AttendanceLogDTO[]>({
     queryKey: ["logs", filters?.type ?? "all", filters?.agentId ?? "all"],
@@ -118,7 +144,9 @@ export function useLogs(filters?: { type?: string; agentId?: string }) {
       if (filters?.type) params.set("type", filters.type);
       if (filters?.agentId) params.set("agentId", filters.agentId);
       params.set("limit", "100");
-      const res = await fetch(`/api/logs?${params.toString()}`, { cache: "no-store" });
+      const res = await fetch(`/api/logs?${params.toString()}`, {
+        cache: "no-store",
+      });
       if (!res.ok) throw new Error("Failed to load logs");
       return res.json();
     },
@@ -126,6 +154,9 @@ export function useLogs(filters?: { type?: string; agentId?: string }) {
   });
 }
 
+/* ============================================================
+ * Alerts
+ * ============================================================ */
 export function useAlerts(onlyUnread = false) {
   return useQuery<AlertDTO[]>({
     queryKey: ["alerts", onlyUnread ? "unread" : "all"],
@@ -149,10 +180,15 @@ export function useDismissAlert() {
       if (!res.ok) throw new Error("Failed to dismiss alert");
       return res.json();
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["alerts"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["alerts"] });
+    },
   });
 }
 
+/* ============================================================
+ * Seed
+ * ============================================================ */
 export function useSeed() {
   return useMutation({
     mutationFn: async () => {
@@ -163,6 +199,9 @@ export function useSeed() {
   });
 }
 
+/* ============================================================
+ * Current agent (for agent-role sessions)
+ * ============================================================ */
 export function useCurrentAgent() {
   return useQuery<AgentDTO>({
     queryKey: ["agent-me"],
@@ -175,6 +214,9 @@ export function useCurrentAgent() {
   });
 }
 
+/* ============================================================
+ * Acknowledge / mark-done an order
+ * ============================================================ */
 export function useUpdateOrderStatus() {
   const qc = useQueryClient();
   return useMutation({
@@ -190,6 +232,9 @@ export function useUpdateOrderStatus() {
       }
       return res.json();
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+    onSuccess: (_data, _vars) => {
+      // Invalidate the per-agent list and the "all" list
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
   });
 }

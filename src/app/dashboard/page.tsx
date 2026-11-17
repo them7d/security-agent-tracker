@@ -16,6 +16,7 @@ export default function DashboardPage() {
       router.replace("/login");
       return;
     }
+    // Bounce agents to their own console
     if (session.user.role === "agent") {
       router.replace("/agent");
     }

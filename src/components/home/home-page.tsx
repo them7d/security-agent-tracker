@@ -11,36 +11,12 @@ import { Separator } from "@/components/ui/separator";
 import { HomeNav } from "./home-nav";
 
 const FEATURES = [
-  {
-    icon: Radio,
-    title: "Live GPS tracking",
-    body: "See every agent's exact location on a tactical map, refreshed every few seconds.",
-  },
-  {
-    icon: MapPin,
-    title: "Geofence enforcement",
-    body: "Draw each agent's assigned work area as a polygon. The moment they step out, you know.",
-  },
-  {
-    icon: Bell,
-    title: "Instant alerts",
-    body: "A bell badge in the topbar lights up the moment an agent leaves their zone or re-enters it.",
-  },
-  {
-    icon: Send,
-    title: "Order dispatch",
-    body: "Send priority-tagged orders straight to a specific agent's console. They acknowledge with one click.",
-  },
-  {
-    icon: ScrollText,
-    title: "Attendance logging",
-    body: "Automatic check-in / check-out rows the moment an agent enters or leaves their geofence. Departure and arrival times are recorded to the second.",
-  },
-  {
-    icon: Users,
-    title: "Two role-based consoles",
-    body: "One platform, two experiences: a dense tactical dashboard for supervisors, a focused idle screen for agents in the field.",
-  },
+  { icon: Radio,       title: "Live GPS tracking",       body: "See every agent's exact location on a tactical map, refreshed every few seconds." },
+  { icon: MapPin,      title: "Geofence enforcement",    body: "Draw each agent's assigned work area as a polygon. The moment they step out, you know." },
+  { icon: Bell,        title: "Instant alerts",          body: "A bell badge in the topbar lights up the moment an agent leaves their zone or re-enters it." },
+  { icon: Send,        title: "Order dispatch",          body: "Send priority-tagged orders straight to a specific agent's console. They acknowledge with one click." },
+  { icon: ScrollText,  title: "Attendance logging",      body: "Automatic check-in / check-out rows the moment an agent enters or leaves their geofence. Times recorded to the second." },
+  { icon: Users,       title: "Two role-based consoles", body: "One platform, two experiences: a dense tactical dashboard for supervisors, a focused idle screen for agents in the field." },
 ];
 
 export function HomePage() {
@@ -69,14 +45,10 @@ export function HomePage() {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
               <Button asChild size="lg">
-                <Link href="/login">
-                  Sign in as supervisor <ArrowRight className="h-4 w-4 ml-2" />
-                </Link>
+                <Link href="/login">Sign in as supervisor <ArrowRight className="h-4 w-4 ml-2" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link href="/login">
-                  Sign in as agent
-                </Link>
+                <Link href="/login">Sign in as agent</Link>
               </Button>
             </div>
             <p className="mt-4 text-xs text-muted-foreground font-mono">
@@ -91,9 +63,7 @@ export function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16 sm:py-20">
           <div className="grid lg:grid-cols-2 gap-12">
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-primary font-mono mb-3">
-                What is SentinelSec
-              </p>
+              <p className="text-[10px] uppercase tracking-wider text-primary font-mono mb-3">What is SentinelSec</p>
               <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight">
                 A single pane of glass for your entire field force.
               </h2>
@@ -113,10 +83,9 @@ export function HomePage() {
                 departure time logged to the second for payroll and compliance.
               </p>
               <p>
-                When the supervisor needs to redirect a guard — &ldquo;proceed to the north
-                gate&rdquo;, &ldquo;suspect package reported, hold position&rdquo; — they click
-                the agent on the map, type the order, set a priority, and dispatch. The
-                agent&apos;s idle console lights up with the order within seconds.
+                When the supervisor needs to redirect a guard, they click the agent on the map,
+                type the order, set a priority, and dispatch. The agent&apos;s idle console
+                lights up with the order within seconds.
               </p>
             </div>
           </div>
@@ -169,9 +138,7 @@ export function HomePage() {
                   </div>
                   <div>
                     <h3 className="text-base font-semibold tracking-tight">For supervisors</h3>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
-                      /dashboard
-                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">/dashboard</p>
                   </div>
                 </div>
                 <Separator />
@@ -182,9 +149,7 @@ export function HomePage() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">▸</span> Dispatch orders with priority + body</li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">▸</span> Review attendance + alert logs</li>
                 </ul>
-                <Button asChild size="sm" className="w-full">
-                  <Link href="/login">Open supervisor console</Link>
-                </Button>
+                <Button asChild size="sm" className="w-full"><Link href="/login">Open supervisor console</Link></Button>
               </CardContent>
             </Card>
             <Card className="border-border/60">
@@ -195,9 +160,7 @@ export function HomePage() {
                   </div>
                   <div>
                     <h3 className="text-base font-semibold tracking-tight">For agents</h3>
-                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">
-                      /agent
-                    </p>
+                    <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">/agent</p>
                   </div>
                 </div>
                 <Separator />
@@ -208,9 +171,7 @@ export function HomePage() {
                   <li className="flex gap-2"><span className="text-primary mt-0.5">▸</span> Get notified the instant an order arrives</li>
                   <li className="flex gap-2"><span className="text-primary mt-0.5">▸</span> Acknowledge → Mark complete in one click</li>
                 </ul>
-                <Button asChild size="sm" variant="outline" className="w-full">
-                  <Link href="/login">Open agent console</Link>
-                </Button>
+                <Button asChild size="sm" variant="outline" className="w-full"><Link href="/login">Open agent console</Link></Button>
               </CardContent>
             </Card>
           </div>
@@ -228,9 +189,7 @@ export function HomePage() {
             patrolling downtown Baghdad.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild size="lg">
-              <Link href="/login">Sign in <ArrowRight className="h-4 w-4 ml-2" /></Link>
-            </Button>
+            <Button asChild size="lg"><Link href="/login">Sign in <ArrowRight className="h-4 w-4 ml-2" /></Link></Button>
           </div>
         </div>
       </section>

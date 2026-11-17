@@ -3,17 +3,17 @@
   "version": "0.2.1",
   "private": true,
   "scripts": {
-    "dev": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public next dev -p 3000 2>&1 | tee dev.log",
+    "dev": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public next dev -p 3000 2>&1 | tee dev.log",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
-    "db:push": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public prisma db push --accept-data-loss",
-    "db:generate": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public prisma generate",
-    "db:migrate": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate dev",
-    "db:migrate:deploy": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate deploy",
-    "db:migrate:reset": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate reset --force",
-    "db:reset": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate reset",
-    "db:seed": "DATABASE_URL=postgresql://sentinel@localhost:5433/sentinel_sec?schema=public bun prisma/seed.ts"
+    "db:push": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public prisma db push --accept-data-loss",
+    "db:generate": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public prisma generate",
+    "db:migrate": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate dev",
+    "db:migrate:deploy": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate deploy",
+    "db:migrate:reset": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate reset --force",
+    "db:reset": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public prisma migrate reset",
+    "db:seed": "DATABASE_URL=postgresql://sentinel:sentinel@localhost:5433/sentinel_sec?schema=public bun prisma/seed.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

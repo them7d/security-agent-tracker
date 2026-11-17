@@ -1,5 +1,5 @@
 // SentinelSec — GPS agent tracking schema for securities companies
-// Database: PostgreSQL 17 (user-local instance on port 5433)
+// Database: PostgreSQL 17
 generator client {
   provider = "prisma-client-js"
 }
