@@ -1,0 +1,86 @@
+// SentinelSec — GPS agent tracking schema for securities companies
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Supervisor account (auth via NextAuth credentials provider)
+model Supervisor {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+/// Field agent being tracked
+model Agent {
+  id         String    @id @default(cuid())
+  badgeId    String    @unique
+  name       String
+  phone      String?
+  /// on_duty | off_duty | patrol
+  status     String    @default("off_duty")
+  lat        Float
+  lng        Float
+  lastSeenAt DateTime  @default(now())
+  /// JSON string: array of {lat, lng} vertices forming the assigned work area polygon. Empty string = no geofence yet.
+  geofence   String    @default("[]")
+  /// Human-readable label of the assigned area, e.g. "North gate plaza"
+  areaLabel  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  orders     Order[]
+  logs       AttendanceLog[]
+  alerts     Alert[]
+}
+
+/// Order dispatched from supervisor to an agent
+model Order {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  body      String
+  priority  String   @default("normal") // low | normal | high | critical
+  status    String   @default("sent")   // sent | acknowledged | done
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([agentId])
+}
+
+/// Attendance / boundary events log
+/// type: check_in | check_out | geofence_exit | geofence_reenter | manual
+model AttendanceLog {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  type      String
+  lat       Float?
+  lng       Float?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([agentId])
+  @@index([type])
+}
+
+/// Supervisor-facing alerts (e.g. agent left geofence)
+model Alert {
+  id        String   @id @default(cuid())
+  agentId   String
+  agent     Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  type      String   // geofence_exit | geofence_reenter | offline | custom
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+  @@index([agentId])
+}
